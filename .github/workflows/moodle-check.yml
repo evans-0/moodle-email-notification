@@ -1,0 +1,41 @@
+name: Moodle assignment check
+
+on:
+  repository_dispatch:
+    types: [moodle-check]   # triggered externally by cron-job.org every 30 min
+  workflow_dispatch: {}  # lets you trigger a run manually from the Actions tab, for testing
+
+permissions:
+  contents: write  # needed so the workflow can commit the updated seen_events.json back
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run notifier
+        env:
+          ICAL_URL: ${{ secrets.ICAL_URL }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: python moodle_notifier.py
+
+      - name: Commit updated state (if changed)
+        run: |
+          git config user.name "moodle-notifier-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if ! git diff --quiet -- seen_events.json; then
+            git add seen_events.json
+            git commit -m "Update seen_events.json [skip ci]"
+            git push
+          else
+            echo "No state change, nothing to commit."
+          fi
