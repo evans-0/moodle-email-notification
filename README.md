@@ -63,10 +63,32 @@ only in your own cron-job.org account.
    `authtoken=` in it — **treat this like a password**. Anyone with this URL
    can see your calendar.
 
-### 2. Fork this repo
+### 2. Get your own copy
 
-Fork it on GitHub. It can stay public or you can make your fork private —
-nothing sensitive lives in the code itself.
+**If you're fine with your fork being public:** just click **Fork** on
+GitHub. Simplest option. Note that GitHub forks of a public repo are always
+public too (there's no "private fork" option in the standard UI) — this
+matters because once your workflow runs, it commits your own
+`seen_events.json` back to your fork, which would then be publicly visible.
+That file only ever contains opaque numeric event IDs and a timestamp (no
+course names, titles, due dates, or content), so the actual exposure is
+minor, but it's still *your* data going public by default.
+
+**If you'd rather nothing be public:** don't use the Fork button. Instead,
+clone this repo and push it to a brand-new private repo of your own:
+
+```
+git clone https://github.com/<original-owner>/<this-repo>.git my-moodle-notifier
+cd my-moodle-notifier
+git remote remove origin
+git remote add origin https://github.com/<your-username>/my-moodle-notifier.git
+git push -u origin main
+```
+
+(Create the empty private repo on GitHub first, without initializing it with
+any files, then run the commands above.) Either way, none of your secrets
+(calendar token, Gmail password) are ever committed regardless of visibility
+— those live only in encrypted repo secrets.
 
 ### 3. Generate a Gmail App Password
 
